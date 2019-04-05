@@ -47,9 +47,9 @@ namespace KMeansPokemon
             string s = "";
             for (int i = 0; i < AmountCentroids; i++)
             {
-                s += "\n";
+                s+= "\n";
                 s += "Centroid: " + i+"|";
-                for (int j = 0; j < 7; j++)
+                for (int j = 0; j < Columns; j++)
                 {
                     s += string.Format(" {0} ", Centroids[i, j]);
                 }
@@ -80,16 +80,19 @@ namespace KMeansPokemon
         public int AmountPokemons;
         public int AmountCentroids;
 
+        public int Columns;
+
         public int[] AssignedPoints;
 
         Random random = new Random();
 
-        public Algo(int amountPokemons, int centroids=3)
+        public Algo(int amountPokemons, int centroids=3, int Columns=6)
         {
             this.csv = new CSV();
             this.AmountPokemons = amountPokemons;
             this.AmountCentroids = centroids;
-
+            this.Columns = Columns;
+            
             MakePoints(csv.dt);
             MakeCentroids();
         }
@@ -97,12 +100,12 @@ namespace KMeansPokemon
         private void MakePoints(DataTable Data)
         {
             //index 4 to 11 is HP,Attack,Defense,Sp. Atk,Sp. Def,Speed,Generation
-            Points = new int[AmountPokemons, 7];
+            Points = new int[AmountPokemons, Columns];
 
             for(int Pokemon= 0; Pokemon<AmountPokemons; Pokemon++)
             {
                 int pointindex = 0;
-                for (int i = 4; i < 11; i++)
+                for (int i = 4; i < 4+Columns; i++)
                 {
                     //Console.WriteLine(Pokemon + "  " + Convert.ToInt32(Data.Rows[Pokemon][i].ToString()));
                     Points[Pokemon, pointindex] = Convert.ToInt32(Data.Rows[Pokemon][i].ToString());
@@ -115,11 +118,11 @@ namespace KMeansPokemon
 
         public void MakeCentroids()
         {
-            Centroids = new int[AmountCentroids, 7];
+            Centroids = new int[AmountCentroids, Columns];
 
             for(int C = 0; C < AmountCentroids; C++)
             {
-                for(int item = 0; item < 7; item++)
+                for(int item = 0; item < Columns; item++)
                 {
                     Thread.Sleep(3);
                     Centroids[C, item] = random.Next(1, 100); 
@@ -140,7 +143,7 @@ namespace KMeansPokemon
 
                 for (int C = 0; C < AmountCentroids; C++)
                 {
-                    for (int item = 0; item < 7; item++)
+                    for (int item = 0; item < Columns; item++)
                     {
                         tempDist += Math.Pow(Centroids[C, item] - Points[p, item], 2);
                         
@@ -168,13 +171,13 @@ namespace KMeansPokemon
             
             for (int centroid = 0; centroid < AmountCentroids; centroid++)
             {
-                int[] sum = new int[7];
+                int[] sum = new int[Columns];
                 int sumindex = 0;
                 for(int point = 0; point < AmountPokemons; point++)
                 {
                     if (AssignedPoints[point] == centroid)
                     {
-                        for(int item = 0; item < 7; item++)
+                        for(int item = 0; item < Columns; item++)
                         {
                             sum[item] += Points[point, item];
                         }
@@ -182,7 +185,7 @@ namespace KMeansPokemon
                     }
                 }
 
-                for(int SummedItem=0;SummedItem<7;SummedItem++)
+                for(int SummedItem=0;SummedItem<Columns;SummedItem++)
                 {
                     Centroids[centroid, SummedItem] = (sum[SummedItem] / sumindex);
                 }
