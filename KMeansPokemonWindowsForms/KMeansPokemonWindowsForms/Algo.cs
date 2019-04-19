@@ -5,8 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using KMeansPokemonWindowsForms.Data;
+using System.Windows.Forms.DataVisualization.Charting;
 
-namespace KMeansPokemon
+
+namespace KMeansPokemonWindowsForms
 {
     class Algo
     {
@@ -16,6 +19,7 @@ namespace KMeansPokemon
         //Step 4: Recalculate centroids
 
         public CSV csv;
+        public Chart chart;
 
         public int[,] Points;
         public int[,] Centroids;
@@ -24,17 +28,17 @@ namespace KMeansPokemon
 
         public int Columns;
 
-        public int[] AssignedPoints;
+        public Dictionary<string, int> AssignedPoints;
 
         Random random = new Random();
 
-        public Algo(int amountPokemons, int centroids = 3, int Columns = 6)
+        public Algo(int amountPokemons, Chart chart,int centroids = 3, int Columns = 6 )
         {
             this.csv = new CSV();
             this.AmountPokemons = amountPokemons;
             this.AmountCentroids = centroids;
             this.Columns = Columns;
-
+            this.chart = chart;
             MakePoints(csv.dt);
             MakeCentroids();
         }
@@ -79,7 +83,7 @@ namespace KMeansPokemon
                 for (int item = 0; item < Columns; item++)
                 {
                     Thread.Sleep(30);
-                    Centroids[C, item] = Convert.ToInt32(csv.dt.Rows[RP][4+item].ToString());
+                    Centroids[C, item] = Convert.ToInt32(csv.dt.Rows[RP][4 + item].ToString());
                     //Centroids[C, item] = PokemonTypes[C, item];
                 }
                 Console.WriteLine("Centroid Pokemon {0}", csv.dt.Rows[RP][1].ToString());
@@ -100,38 +104,53 @@ namespace KMeansPokemon
         #region AssignPointsToCentroids
         public void AssignPointsToCentroids()
         {
-            AssignedPoints = new int[AmountPokemons];
+            AssignedPoints = new Dictionary<string, int>();
+            chart.Series["Pokemons"].Points.Clear();
+            chart.Series["Centroid0"].Points.Clear();
+            chart.Series["Centroid1"].Points.Clear();
+            chart.Series["Centroid2"].Points.Clear();
 
 
-            for (int p = 0; p < AmountPokemons; p++)
+
+            for (int Pokemon = 0; Pokemon < AmountPokemons; Pokemon++)
             {
-                double tempDist = 0;
-                double Dist = 0;
-                int ClosestCentroid = 0;
+                double globaldistance = 10000000;
+                int closestcentroid = 1000000;
 
-                for (int C = 0; C < AmountCentroids; C++)
+
+                for (int Centroid = 0; Centroid < AmountCentroids; Centroid++)
                 {
-                    int PokemonStat = 0;
-                    int CentroidStat = 0;
-                    for (int item = 0; item < Columns; item++)
+                    int statspokemon = 0;
+                    int statscentroid = 0;
+                    for(int stat=0; stat < Columns-4; stat++)
                     {
-                        PokemonStat += Points[p, item];
-                        CentroidStat += Centroids[C, item];
-                    };
-
-                    int res = CentroidStat - PokemonStat;
-                    tempDist = Math.Pow(res, 2);
-                    //Console.WriteLine(res);
-                    if (tempDist > Dist)
-                    {
-                        Dist = tempDist;
-                        ClosestCentroid = C;
-
-                        //Console.WriteLine(Dist);
+                        statspokemon += Points[Pokemon, stat];
+                        statscentroid += Centroids[Centroid, stat];
                     }
+
+                    double distance = statspokemon - statscentroid;
+                    distance = Math.Pow(distance, 2);
+                    distance = Math.Sqrt(distance);
+
+                    chart.Series["Pokemons"].Points.AddXY(Pokemon, statspokemon);
+                    chart.Series["Centroid"+Centroid].Points.AddXY(Pokemon, statscentroid);
+
+                    //Console.WriteLine(statscentroid);
+
+                    if (distance < globaldistance)
+                    {
+                        globaldistance = distance;
+                        closestcentroid = Centroid;
+                    }
+
                 }
-                AssignedPoints[p] = ClosestCentroid;
+                chart.Series["Centroid1"].Points[Pokemon].AxisLabel = csv.dt.Rows[Pokemon][1].ToString();
+                AssignedPoints.Add(csv.dt.Rows[Pokemon][1].ToString(), closestcentroid);
             }
+
+            
+
+
         }
         #endregion
 
@@ -143,21 +162,27 @@ namespace KMeansPokemon
             {
                 int[] sum = new int[Columns];
                 int sumindex = 0;
-                for (int point = 0; point < AmountPokemons; point++)
-                {
-                    if (AssignedPoints[point] == centroid)
+                int pointindex = 0;
+                foreach(KeyValuePair<string, int> kvp in AssignedPoints)
+                { 
+                    if (kvp.Value == centroid)
                     {
                         for (int item = 0; item < Columns; item++)
                         {
-                            sum[item] += Points[point, item];
+                            sum[item] += Points[pointindex, item];
                         }
                         sumindex++;
                     }
+                    pointindex++;
                 }
 
                 for (int SummedItem = 0; SummedItem < Columns; SummedItem++)
                 {
-                    Centroids[centroid, SummedItem] = (sum[SummedItem] / sumindex);
+                    if (sumindex != 0)
+                    {
+                        Centroids[centroid, SummedItem] = (sum[SummedItem] / sumindex);
+                        //Console.WriteLine(Centroids[centroid, SummedItem]);
+                    }
                 }
             }
 
@@ -167,4 +192,5 @@ namespace KMeansPokemon
 
 
     }
+
 }
