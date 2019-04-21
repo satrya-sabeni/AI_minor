@@ -36,7 +36,7 @@ namespace KMeansPokemonWindowsForms
 
         public void Run()
         {
-            for (int iteration = 0; iteration < 5; iteration++)
+            for (int iteration = 0; iteration < 50; iteration++)
             {
                 //try
                 //{
