@@ -66,7 +66,7 @@ namespace ConsoleApp1
             int index = 0;
             for (int N = 0; N < NummerCases; N++)
             {
-                Thread.Sleep(1);
+                //Thread.Sleep(1);
                 random = new Random();
 
                 int Pok = random.Next(0, 2);
@@ -75,8 +75,9 @@ namespace ConsoleApp1
                 else if (Pok == 1) { Name = "Pidgeotto"; }
 
                 int randomstat = random.Next(0, 31);
-                int randomhp = random.Next(Pokemons[Pok, 0] +randomstat, Pokemons[Pok, 0] + randomstat);
-                int randomattack = random.Next(Pokemons[Pok, 1] + randomstat, Pokemons[Pok, 1] + randomstat);
+                int randomhp = random.Next(Pokemons[Pok, 0] +randomstat, Pokemons[Pok, 0] + randomstat );
+                randomstat= random.Next(0, 31);
+                int randomattack = random.Next(Pokemons[Pok, 1] + randomstat , Pokemons[Pok, 1] + randomstat);
                 //31 is the range for a stat to differ
                 Cases.Add(Name + index,
                     new Tuple<int, int>(
@@ -155,8 +156,8 @@ namespace ConsoleApp1
 
             double ChancePidgey = PosteriorPidgey * (PriorPidgeyAttack / PriorPidgeyHP);
             double ChancePidgeotto = PosteriorPidgeotto * (PriorPidgeottoAttack / PriorPidgeottoHP);
-
-            Console.WriteLine("\nChance of unknown Pokemon being \nPidgey={0}\nPidgeotto={1}\n(NaN=0)", ChancePidgey, ChancePidgeotto);
+            Console.WriteLine("\n{0} Cases/data", NummerCases);
+            Console.WriteLine("Chance of unknown Pokemon being \nPidgey={0}\nPidgeotto={1}\n(NaN=0)", ChancePidgey, ChancePidgeotto);
             Console.WriteLine("-----------------------------------------------------------------------------");
         }
 
